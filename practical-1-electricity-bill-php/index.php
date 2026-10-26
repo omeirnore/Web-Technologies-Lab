@@ -207,7 +207,7 @@
   <div class="top-bar">
     <div class="container">
       <div class="brand">Electricity Bill Calculator</div>
-      <div class="student-info">Omeir Nore &middot; Roll 61 &middot; PRN 12414006</div>
+      <div class="student-info">Omeir Nore &middot; Roll No 61 &middot; PRN 12414006</div>
     </div>
   </div>
 
