@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Clock Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #09090b;
+      --surface: #111113;
+      --border: #1c1c1e;
+      --border-hover: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --text-dim: #52525b;
+      --text-faint: #3f3f46;
+      --accent: #3b82f6;
+      --accent-dim: #1e3a5f;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+    .top-bar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { font-size: 1rem; font-weight: 600; letter-spacing: -0.3px; }
+    .student-info { color: var(--text-dim); font-size: 0.78rem; }
+
+    /* ── Main layout ── */
+    .main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    .page-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
+    .page-sub { color: var(--text-dim); font-size: 0.88rem; margin-bottom: 2rem; }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+    }
+    .panel-head {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body { padding: 1.25rem; }
+
+    /* ── Hero section ── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Analog clock ── */
+    .clock-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+    .clock-face {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      border: 2px solid var(--border-hover);
+      background: var(--bg);
+    }
+    .clock-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 8px; height: 8px;
+      background: var(--text);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+    .hand {
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      border-radius: 2px;
+    }
+    .hand-hour {
+      width: 3px;
+      height: 60px;
+      background: var(--text);
+      margin-left: -1.5px;
+    }
+    .hand-minute {
+      width: 2px;
+      height: 80px;
+      background: var(--text-muted);
+      margin-left: -1px;
+    }
+    .hand-second {
+      width: 1px;
+      height: 90px;
+      background: var(--accent);
+      margin-left: -0.5px;
+    }
+    .tick {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform-origin: 0 112px;
+    }
+    .tick-line {
+      width: 1px;
+      background: var(--text-faint);
+    }
+    .tick-major .tick-line {
+      height: 14px;
+      width: 2px;
+      background: var(--text-muted);
+    }
+    .tick-minor .tick-line {
+      height: 6px;
+    }
+    .hour-label {
+      position: absolute;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      transform: translate(-50%, -50%);
+    }
+
+    /* ── Digital display ── */
+    .digital-section { display: flex; flex-direction: column; justify-content: center; }
+    .digital-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 4rem;
+      font-weight: 600;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .digital-seconds {
+      font-size: 1.8rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .digital-date {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .digital-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      border: 1px solid var(--border-hover);
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover { color: var(--text); border-color: var(--text-faint); }
+    .btn-active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      font-weight: 600;
+    }
+    .btn-primary:hover { opacity: 0.85; color: var(--bg); }
+    .btn-danger { color: var(--danger); border-color: #5c1919; }
+    .btn-danger:hover { background: #1a0505; border-color: var(--danger); }
+    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.72rem; }
+
+    /* ── World clocks grid ── */
+    .tz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .tz-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem 1.15rem;
+      position: relative;
+      transition: border-color 0.15s;
+    }
+    .tz-card:hover { border-color: var(--border-hover); }
+    .tz-city {
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .tz-zone {
+      font-size: 0.72rem;
+      color: var(--text-faint);
+      margin-bottom: 0.75rem;
+    }
+    .tz-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.15rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .tz-date { font-size: 0.75rem; color: var(--text-dim); }
+    .tz-offset {
+      position: absolute;
+      top: 1rem;
+      right: 1.15rem;
+      font-size: 0.7rem;
+      color: var(--text-faint);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tz-remove {
+      position: absolute;
+      bottom: 0.85rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      transition: color 0.15s;
+    }
+    .tz-remove:hover { color: var(--danger); }
+
+    /* ── Add timezone ── */
+    .add-tz-card {
+      border: 1px dashed var(--border-hover);
+      border-radius: 0.6rem;
+      padding: 1rem 1.15rem;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      font-family: inherit;
+      min-height: 130px;
+      transition: all 0.15s;
+    }
+    .add-tz-card:hover { border-color: var(--text-dim); color: var(--text-muted); }
+
+    /* ── Select dropdown ── */
+    .tz-select {
+      background: var(--bg);
+      border: 1px solid var(--border-hover);
+      color: var(--text);
+      border-radius: 0.4rem;
+      padding: 0.45rem 0.7rem;
+      font-size: 0.8rem;
+      font-family: inherit;
+      width: 100%;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+    .tz-select option { background: var(--bg); color: var(--text); }
+
+    /* ── Alarms ── */
+    .alarm-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .alarm-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 0.9rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .alarm-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .alarm-label { color: var(--text-dim); font-size: 0.78rem; margin-left: 0.75rem; }
+    .alarm-ringing { border-color: var(--accent); animation: ring-pulse 1s ease-in-out infinite; }
+    @keyframes ring-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+    }
+
+    .alarm-form {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    .alarm-input {
+      background: var(--bg);
+      border: 1px solid var(--border-hover);
+      color: var(--text);
+      border-radius: 0.4rem;
+      padding: 0.45rem 0.7rem;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+    .alarm-input:focus { outline: none; border-color: var(--text-dim); }
+
+    .empty-msg {
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+
+    /* ── Bottom grid ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Stopwatch / Timer ── */
+    .sw-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+    }
+    .sw-ms { font-size: 1.2rem; color: var(--text-muted); }
+    .sw-controls { display: flex; gap: 0.5rem; justify-content: center; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">Clock Dashboard</div>
+      <div class="student-info">Omeir Nore &middot; Roll 61 &middot; PRN 12414006</div>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+    // ── Timezone database ──
+    const AVAILABLE_TIMEZONES = [
+      { id: 'America/New_York',      city: 'New York',    country: 'USA' },
+      { id: 'America/Los_Angeles',   city: 'Los Angeles', country: 'USA' },
+      { id: 'America/Chicago',       city: 'Chicago',     country: 'USA' },
+      { id: 'Europe/London',         city: 'London',      country: 'UK' },
+      { id: 'Europe/Paris',          city: 'Paris',       country: 'France' },
+      { id: 'Europe/Berlin',         city: 'Berlin',      country: 'Germany' },
+      { id: 'Europe/Moscow',         city: 'Moscow',      country: 'Russia' },
+      { id: 'Asia/Tokyo',            city: 'Tokyo',       country: 'Japan' },
+      { id: 'Asia/Shanghai',         city: 'Shanghai',    country: 'China' },
+      { id: 'Asia/Kolkata',          city: 'Mumbai',      country: 'India' },
+      { id: 'Asia/Dubai',            city: 'Dubai',       country: 'UAE' },
+      { id: 'Asia/Singapore',        city: 'Singapore',   country: 'Singapore' },
+      { id: 'Australia/Sydney',      city: 'Sydney',      country: 'Australia' },
+      { id: 'Pacific/Auckland',      city: 'Auckland',    country: 'NZ' },
+      { id: 'Asia/Hong_Kong',        city: 'Hong Kong',   country: 'China' },
+      { id: 'America/Sao_Paulo',     city: 'São Paulo',   country: 'Brazil' },
+    ];
+
+    const DEFAULT_ZONES = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Asia/Dubai'];
+
+    // ── Helpers ──
+    function getTimeInZone(tz, now) {
+      return new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    }
+
+    function formatTime(date, is24) {
+      const h = date.getHours();
+      const m = String(date.getMinutes()).padStart(2, '0');
+      const s = String(date.getSeconds()).padStart(2, '0');
+      if (is24) return { h: String(h).padStart(2, '0'), m, s, period: '' };
+      const period = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return { h: String(h12).padStart(2, '0'), m, s, period };
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatShortDate(date) {
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    function getUTCOffset(tz) {
+      const now = new Date();
+      const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
+      const parts = fmt.formatToParts(now);
+      const offsetPart = parts.find(p => p.type === 'timeZoneName');
+      return offsetPart ? offsetPart.value.replace('GMT', 'UTC') : '';
+    }
+
+    // ── Analog Clock ──
+    function AnalogClock({ now }) {
+      const h = now.getHours() % 12;
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+      const ms = now.getMilliseconds();
+
+      const secDeg = (s + ms / 1000) * 6;
+      const minDeg = (m + s / 60) * 6;
+      const hrDeg  = (h + m / 60) * 30;
+
+      const ticks = [];
+      for (let i = 0; i < 60; i++) {
+        const isMajor = i % 5 === 0;
+        ticks.push(
+          <div key={i} className={`tick ${isMajor ? 'tick-major' : 'tick-minor'}`}
+               style={{ transform: `translateX(-50%) rotate(${i * 6}deg)` }}>
+            <div className="tick-line" />
+          </div>
+        );
+      }
+
+      const hourPositions = [
+        { n: 12, x: 50, y: 12 }, { n: 1, x: 69, y: 15 }, { n: 2, x: 82, y: 27 },
+        { n: 3, x: 88, y: 50 }, { n: 4, x: 82, y: 73 }, { n: 5, x: 69, y: 85 },
+        { n: 6, x: 50, y: 90 }, { n: 7, x: 31, y: 85 }, { n: 8, x: 18, y: 73 },
+        { n: 9, x: 12, y: 50 }, { n: 10, x: 18, y: 27 }, { n: 11, x: 31, y: 15 },
+      ];
+
+      return (
+        <div className="clock-container">
+          <div className="clock-face">
+            {ticks}
+            {hourPositions.map(({ n, x, y }) => (
+              <div key={n} className="hour-label" style={{ left: `${x}%`, top: `${y}%` }}>{n}</div>
+            ))}
+            <div className="hand hand-hour" style={{ transform: `rotate(${hrDeg}deg)` }} />
+            <div className="hand hand-minute" style={{ transform: `rotate(${minDeg}deg)` }} />
+            <div className="hand hand-second" style={{ transform: `rotate(${secDeg}deg)` }} />
+            <div className="clock-center" />
+          </div>
+        </div>
+      );
+    }
+
+    // ── World Clock Card ──
+    function TimezoneCard({ tzId, now, is24, onRemove }) {
+      const info = AVAILABLE_TIMEZONES.find(t => t.id === tzId);
+      const tzTime = getTimeInZone(tzId, now);
+      const time = formatTime(tzTime, is24);
+      const offset = getUTCOffset(tzId);
+
+      return (
+        <div className="tz-card">
+          <div className="tz-city">{info ? info.city : tzId}</div>
+          <div className="tz-zone">{info ? info.country : ''}</div>
+          <div className="tz-time">
+            {time.h}:{time.m}
+            <span style={{ fontSize: '0.85rem', color: '#71717a', marginLeft: '3px' }}>{time.period}</span>
+          </div>
+          <div className="tz-date">{formatShortDate(tzTime)}</div>
+          <div className="tz-offset">{offset}</div>
+          <button className="tz-remove" onClick={() => onRemove(tzId)} title="Remove">&times;</button>
+        </div>
+      );
+    }
+
+    // ── Stopwatch ──
+    function Stopwatch() {
+      const [elapsed, setElapsed] = useState(0);
+      const [running, setRunning] = useState(false);
+      const intervalRef = useRef(null);
+      const startRef = useRef(0);
+
+      useEffect(() => {
+        if (running) {
+          startRef.current = Date.now() - elapsed;
+          intervalRef.current = setInterval(() => {
+            setElapsed(Date.now() - startRef.current);
+          }, 37);
+        } else {
+          clearInterval(intervalRef.current);
+        }
+        return () => clearInterval(intervalRef.current);
+      }, [running]);
+
+      const mins = String(Math.floor(elapsed / 60000)).padStart(2, '0');
+      const secs = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, '0');
+      const ms   = String(Math.floor((elapsed % 1000) / 10)).padStart(2, '0');
+
+      return (
+        <div>
+          <div className="sw-display">
+            {mins}:{secs}<span className="sw-ms">.{ms}</span>
+          </div>
+          <div className="sw-controls">
+            <button className={`btn ${running ? 'btn-danger' : 'btn-primary'}`}
+                    onClick={() => setRunning(r => !r)}>
+              {running ? 'Stop' : 'Start'}
+            </button>
+            <button className="btn" onClick={() => { setRunning(false); setElapsed(0); }}>Reset</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Main App ──
+    function App() {
+      const [now, setNow] = useState(new Date());
+      const [is24, setIs24] = useState(true);
+      const [zones, setZones] = useState(DEFAULT_ZONES);
+      const [addingZone, setAddingZone] = useState(false);
+      const [selectedTz, setSelectedTz] = useState('');
+
+      // Alarms
+      const [alarms, setAlarms] = useState([]);
+      const [alarmTime, setAlarmTime] = useState('');
+      const [alarmLabel, setAlarmLabel] = useState('');
+      const [ringingIds, setRingingIds] = useState(new Set());
+      const checkedRef = useRef(new Set());
+
+      // Tick at ~60fps for smooth analog hand
+      useEffect(() => {
+        const id = setInterval(() => setNow(new Date()), 50);
+        return () => clearInterval(id);
+      }, []);
+
+      // Check alarms
+      useEffect(() => {
+        const hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        alarms.forEach(a => {
+          if (a.time === hhmm && !checkedRef.current.has(a.id)) {
+            checkedRef.current.add(a.id);
+            setRingingIds(prev => new Set(prev).add(a.id));
+            try { new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA').play(); } catch(e) {}
+          }
+        });
+      }, [now, alarms]);
+
+      const time = formatTime(now, is24);
+
+      const removeZone = useCallback((id) => {
+        setZones(prev => prev.filter(z => z !== id));
+      }, []);
+
+      const addZone = () => {
+        if (selectedTz && !zones.includes(selectedTz)) {
+          setZones(prev => [...prev, selectedTz]);
+        }
+        setAddingZone(false);
+        setSelectedTz('');
+      };
+
+      const availableToAdd = AVAILABLE_TIMEZONES.filter(t => !zones.includes(t.id));
+
+      const addAlarm = () => {
+        if (!alarmTime) return;
+        setAlarms(prev => [...prev, { id: Date.now(), time: alarmTime, label: alarmLabel || 'Alarm' }]);
+        setAlarmTime('');
+        setAlarmLabel('');
+      };
+
+      const removeAlarm = (id) => {
+        setAlarms(prev => prev.filter(a => a.id !== id));
+        setRingingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+        checkedRef.current.delete(id);
+      };
+
+      const dismissAlarm = (id) => {
+        setRingingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+      };
+
+      return (
+        <div className="main">
+          <h1 className="page-title">World Clock</h1>
+          <p className="page-sub">Live time across regions with alarm and stopwatch utilities.</p>
+
+          {/* ── Hero: Analog + Digital ── */}
+          <div className="hero-grid">
+            <div className="panel">
+              <div className="panel-head">Analog Clock</div>
+              <AnalogClock now={now} />
+            </div>
+            <div className="panel">
+              <div className="panel-head">
+                <span>Local Time</span>
+                <span style={{ fontSize: '0.7rem', color: '#3f3f46' }}>
+                  {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                </span>
+              </div>
+              <div className="panel-body digital-section">
+                <div className="digital-time">
+                  {time.h}:{time.m}<span className="digital-seconds">:{time.s}</span>
+                  {!is24 && <span style={{ fontSize: '1.2rem', color: '#52525b', marginLeft: '6px' }}>{time.period}</span>}
+                </div>
+                <div className="digital-date">{formatDate(now)}</div>
+                <div className="digital-controls">
+                  <button className={`btn ${is24 ? 'btn-active' : ''}`} onClick={() => setIs24(true)}>24H</button>
+                  <button className={`btn ${!is24 ? 'btn-active' : ''}`} onClick={() => setIs24(false)}>12H</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── World Clocks ── */}
+          <div className="panel" style={{ marginBottom: '1.5rem' }}>
+            <div className="panel-head">
+              <span>Time Zones</span>
+              <span style={{ fontSize: '0.72rem', color: '#3f3f46', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
+                {zones.length} region{zones.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="panel-body">
+              <div className="tz-grid">
+                {zones.map(tz => (
+                  <TimezoneCard key={tz} tzId={tz} now={now} is24={is24} onRemove={removeZone} />
+                ))}
+                {addingZone ? (
+                  <div className="tz-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <select className="tz-select" value={selectedTz}
+                            onChange={e => setSelectedTz(e.target.value)}>
+                      <option value="">Select a city...</option>
+                      {availableToAdd.map(tz => (
+                        <option key={tz.id} value={tz.id}>{tz.city}, {tz.country}</option>
+                      ))}
+                    </select>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button className="btn btn-primary btn-sm" onClick={addZone}>Add</button>
+                      <button className="btn btn-sm" onClick={() => setAddingZone(false)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  availableToAdd.length > 0 && (
+                    <button className="add-tz-card" onClick={() => setAddingZone(true)}>
+                      + Add time zone
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bottom: Alarms + Stopwatch ── */}
+          <div className="bottom-grid">
+            <div className="panel">
+              <div className="panel-head">Alarms</div>
+              <div className="panel-body">
+                <div className="alarm-list">
+                  {alarms.length === 0 && <div className="empty-msg">No alarms set</div>}
+                  {alarms.map(a => (
+                    <div key={a.id} className={`alarm-row ${ringingIds.has(a.id) ? 'alarm-ringing' : ''}`}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="alarm-time">{a.time}</span>
+                        <span className="alarm-label">{a.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        {ringingIds.has(a.id) && (
+                          <button className="btn btn-sm btn-active" onClick={() => dismissAlarm(a.id)}>Dismiss</button>
+                        )}
+                        <button className="btn btn-sm btn-danger" onClick={() => removeAlarm(a.id)}>Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="alarm-form">
+                  <input type="time" className="alarm-input" value={alarmTime}
+                         onChange={e => setAlarmTime(e.target.value)} />
+                  <input type="text" className="alarm-input" placeholder="Label"
+                         value={alarmLabel} onChange={e => setAlarmLabel(e.target.value)}
+                         style={{ flex: 1 }} />
+                  <button className="btn btn-primary btn-sm" onClick={addAlarm}>Set</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-head">Stopwatch</div>
+              <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '180px' }}>
+                <Stopwatch />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+</body>
+</html>
