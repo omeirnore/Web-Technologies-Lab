@@ -10,7 +10,7 @@ Lab practicals for the Web Technologies course at Vishwakarma Institute of Techn
 |---|-------|-----------|--------|
 | 1 | [Electricity Bill Calculator](./practical-1-electricity-bill-php/) | PHP, Bootstrap, jQuery | ✅ |
 | 2 | [Real-time Clock Dashboard](./practical-2-clock-dashboard/) | React | ✅ |
-| 3 | Electricity Bill Calculator (Servlet) | Servlet, JSP, Bootstrap, jQuery | ⬜ |
+| 3 | [Electricity Bill Calculator (Servlet)](./practical-3-electricity-bill-servlet/) | Servlet, JSP, Bootstrap, jQuery | ✅ |
 | 4 | VIT Semester Result | React | ⬜ |
 | 5 | VIT Semester Result (Full-stack) | JavaScript, Spring Boot, MySQL | ⬜ |
 | 6 | Online Bookstore | Node.js, MySQL/MongoDB | ⬜ |
