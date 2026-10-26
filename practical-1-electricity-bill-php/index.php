@@ -5,267 +5,336 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Electricity Bill Calculator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
     body {
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      background: #09090b;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #fafafa;
     }
 
-    .hero-header {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      padding: 2rem 0;
-      text-align: center;
-      color: #fff;
-      margin-bottom: 2.5rem;
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+    /* ── Top bar ── */
+    .top-bar {
+      border-bottom: 1px solid #1c1c1e;
+      padding: 1.1rem 0;
+      background: #09090b;
     }
-    .hero-header h1 { font-weight: 700; letter-spacing: -0.5px; }
-    .hero-header p  { opacity: 0.9; margin-bottom: 0; }
-
-    .card-calc {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 1rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-      color: #e2e8f0;
+    .top-bar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .card-calc .card-header {
-      background: #334155;
-      border-radius: 1rem 1rem 0 0;
+    .brand {
+      font-size: 1.05rem;
       font-weight: 600;
-      font-size: 1.1rem;
-      color: #f8fafc;
+      color: #fafafa;
+      letter-spacing: -0.3px;
     }
+    .brand span { color: #a1a1aa; font-weight: 400; margin-left: 0.5rem; font-size: 0.85rem; }
+    .student-info { color: #52525b; font-size: 0.8rem; letter-spacing: 0.2px; }
 
-    .form-control, .form-control:focus {
-      background: #0f172a;
-      border: 1px solid #475569;
-      color: #f1f5f9;
+    /* ── Layout ── */
+    .main-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 4rem;
     }
-    .form-control:focus {
-      border-color: #f59e0b;
-      box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
-    }
-
-    .btn-calculate {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      border: none;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      padding: 0.6rem 2rem;
-      color: #fff;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-calculate:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-      color: #fff;
-    }
-
-    .btn-reset {
-      background: transparent;
-      border: 1px solid #475569;
-      color: #94a3b8;
-      padding: 0.6rem 2rem;
-      font-weight: 600;
-    }
-    .btn-reset:hover { border-color: #94a3b8; color: #e2e8f0; }
-
-    /* Slab table */
-    .table-slabs { color: #cbd5e1; font-size: 0.92rem; }
-    .table-slabs th { color: #94a3b8; font-weight: 600; border-color: #334155; }
-    .table-slabs td { border-color: #334155; }
-    .table-slabs .active-slab { color: #fbbf24; font-weight: 600; }
-
-    /* Result panel */
-    #result-panel { display: none; }
-    .result-total {
-      font-size: 2.5rem;
+    .page-title {
+      font-size: 1.75rem;
       font-weight: 700;
-      color: #fbbf24;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.35rem;
     }
-    .result-label { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-    .breakdown-item {
+    .page-sub {
+      color: #71717a;
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cards ── */
+    .panel {
+      background: #111113;
+      border: 1px solid #1c1c1e;
+      border-radius: 0.75rem;
+    }
+    .panel-head {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #1c1c1e;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a1a1aa;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .panel-body { padding: 1.5rem; }
+
+    /* ── Form ── */
+    label.form-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #a1a1aa;
+      margin-bottom: 0.4rem;
+    }
+    .form-control {
+      background: #09090b;
+      border: 1px solid #27272a;
+      color: #fafafa;
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.9rem;
+      transition: border-color 0.15s;
+    }
+    .form-control::placeholder { color: #3f3f46; }
+    .form-control:focus {
+      background: #09090b;
+      border-color: #fafafa;
+      box-shadow: none;
+      color: #fafafa;
+    }
+
+    .btn-calc {
+      background: #fafafa;
+      color: #09090b;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.6rem 1.6rem;
+      transition: opacity 0.15s;
+      cursor: pointer;
+    }
+    .btn-calc:hover { opacity: 0.85; color: #09090b; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #71717a;
+      border: 1px solid #27272a;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.6rem 1.6rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-ghost:hover { color: #a1a1aa; border-color: #3f3f46; }
+
+    /* ── Tariff table ── */
+    .slab-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .slab-table th {
+      text-align: left;
+      color: #52525b;
+      font-weight: 500;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #1c1c1e;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .slab-table th:last-child { text-align: right; }
+    .slab-table td {
+      padding: 0.6rem 0;
+      color: #a1a1aa;
+      border-bottom: 1px solid #1c1c1e;
+    }
+    .slab-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .slab-table tr:last-child td { border-bottom: none; }
+    .slab-table tr.active-slab td { color: #fafafa; font-weight: 600; }
+
+    /* ── Result ── */
+    #result-panel { display: none; }
+    .result-amount {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .result-meta { color: #52525b; font-size: 0.82rem; margin-bottom: 2rem; }
+
+    .breakdown-row {
       display: flex;
       justify-content: space-between;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #334155;
-      font-size: 0.95rem;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid #1c1c1e;
+      font-size: 0.85rem;
     }
-    .breakdown-item:last-child { border-bottom: none; }
-    .breakdown-label { color: #94a3b8; }
-    .breakdown-value { color: #e2e8f0; font-weight: 500; }
+    .breakdown-row:last-child { border-bottom: none; }
+    .bd-label { color: #71717a; }
+    .bd-value { color: #e4e4e7; font-weight: 500; font-variant-numeric: tabular-nums; }
 
-    .student-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.15);
-      padding: 0.3rem 0.8rem;
-      border-radius: 2rem;
+    /* ── Empty state ── */
+    .empty-state {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: #3f3f46;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    /* ── Validation ── */
+    .field-error {
+      color: #ef4444;
       font-size: 0.8rem;
-      margin-top: 0.5rem;
+      margin-top: 0.35rem;
+      display: none;
     }
-
-    .error-shake { animation: shake 0.4s ease; }
+    .error-shake { animation: shake 0.35s ease; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-6px); }
-      75% { transform: translateX(6px); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="hero-header">
+  <!-- Top bar -->
+  <div class="top-bar">
     <div class="container">
-      <h1>⚡ Electricity Bill Calculator</h1>
-      <p>Calculate your electricity bill based on unit consumption</p>
-      <span class="student-badge">Omeir Nore &middot; Roll 61 &middot; PRN 12414006</span>
+      <div class="brand">Electricity Bill Calculator</div>
+      <div class="student-info">Omeir Nore &middot; Roll 61 &middot; PRN 12414006</div>
     </div>
   </div>
 
-  <div class="container pb-5">
-    <div class="row g-4 justify-content-center">
+  <!-- Main content -->
+  <div class="main-wrap">
+    <h1 class="page-title">Calculate Your Bill</h1>
+    <p class="page-sub">Enter your electricity consumption to get a detailed cost breakdown by slab.</p>
 
-      <!-- Left Column: Form + Slab Info -->
-      <div class="col-lg-5">
-        <div class="card card-calc mb-4">
-          <div class="card-header px-4 py-3">📝 Enter Consumption</div>
-          <div class="card-body p-4">
+    <div class="grid">
+
+      <!-- Left: Form + Tariff -->
+      <div>
+        <div class="panel" style="margin-bottom: 1.5rem;">
+          <div class="panel-head">Consumption Details</div>
+          <div class="panel-body">
             <form id="billForm" method="post" novalidate>
               <div class="mb-3">
                 <label for="consumerName" class="form-label">Consumer Name</label>
                 <input type="text" class="form-control" id="consumerName" name="consumerName"
-                       placeholder="e.g. Omeir Nore"
+                       placeholder="Enter name"
                        value="<?= htmlspecialchars($_POST['consumerName'] ?? '') ?>">
               </div>
               <div class="mb-3">
                 <label for="units" class="form-label">Units Consumed (kWh)</label>
                 <input type="number" class="form-control" id="units" name="units"
-                       placeholder="Enter units" min="0" required
+                       placeholder="0" min="0" required
                        value="<?= htmlspecialchars($_POST['units'] ?? '') ?>">
-                <div id="unitError" class="text-danger mt-1" style="font-size:0.85rem; display:none;">
-                  Please enter a valid number of units (≥ 0).
-                </div>
+                <div id="unitError" class="field-error">Enter a valid number of units.</div>
               </div>
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-calculate">Calculate Bill</button>
-                <button type="button" class="btn btn-reset" id="btnReset">Reset</button>
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn-calc">Calculate</button>
+                <button type="button" class="btn-ghost" id="btnReset">Reset</button>
               </div>
             </form>
           </div>
         </div>
 
-        <!-- Tariff Slabs -->
-        <div class="card card-calc">
-          <div class="card-header px-4 py-3">📊 Tariff Slabs</div>
-          <div class="card-body p-4">
-            <table class="table table-slabs mb-0">
+        <div class="panel">
+          <div class="panel-head">Tariff Structure</div>
+          <div class="panel-body">
+            <table class="slab-table">
               <thead>
-                <tr><th>Slab</th><th>Units</th><th class="text-end">Rate (₹/unit)</th></tr>
+                <tr><th>Slab</th><th>Range</th><th>Rate</th></tr>
               </thead>
               <tbody>
-                <tr id="slab1"><td>1</td><td>First 50</td><td class="text-end">3.50</td></tr>
-                <tr id="slab2"><td>2</td><td>Next 100</td><td class="text-end">4.00</td></tr>
-                <tr id="slab3"><td>3</td><td>Next 100</td><td class="text-end">5.20</td></tr>
-                <tr id="slab4"><td>4</td><td>Above 250</td><td class="text-end">6.50</td></tr>
+                <tr id="slab1"><td>1</td><td>First 50 units</td><td>&#8377; 3.50</td></tr>
+                <tr id="slab2"><td>2</td><td>51 – 150 units</td><td>&#8377; 4.00</td></tr>
+                <tr id="slab3"><td>3</td><td>151 – 250 units</td><td>&#8377; 5.20</td></tr>
+                <tr id="slab4"><td>4</td><td>Above 250 units</td><td>&#8377; 6.50</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Result -->
-      <div class="col-lg-5">
-        <div id="result-panel" class="card card-calc">
-          <div class="card-header px-4 py-3">🧾 Bill Summary</div>
-          <div class="card-body p-4 text-center">
+      <!-- Right: Result -->
+      <div>
+        <div id="result-panel" class="panel">
+          <div class="panel-head">Bill Summary</div>
+          <div class="panel-body">
 
             <?php
-            /**
-             * PHP CALCULATION — runs on form submit
-             *
-             * Slab rates:
-             *   First 50 units  → ₹3.50/unit
-             *   Next 100 units  → ₹4.00/unit
-             *   Next 100 units  → ₹5.20/unit
-             *   Above 250 units → ₹6.50/unit
-             */
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['units'])) {
                 $units = floatval($_POST['units']);
                 $name  = trim($_POST['consumerName'] ?? 'Consumer');
-
-                if ($units < 0) {
-                    $units = 0;
-                }
+                if ($units < 0) $units = 0;
 
                 $remaining = $units;
 
-                // Slab 1: first 50 units @ 3.50
                 $s1Units = min($remaining, 50);
                 $s1Cost  = $s1Units * 3.50;
                 $remaining -= $s1Units;
 
-                // Slab 2: next 100 units @ 4.00
                 $s2Units = min($remaining, 100);
                 $s2Cost  = $s2Units * 4.00;
                 $remaining -= $s2Units;
 
-                // Slab 3: next 100 units @ 5.20
                 $s3Units = min($remaining, 100);
                 $s3Cost  = $s3Units * 5.20;
                 $remaining -= $s3Units;
 
-                // Slab 4: above 250 @ 6.50
                 $s4Units = $remaining;
                 $s4Cost  = $s4Units * 6.50;
 
                 $totalBill = $s1Cost + $s2Cost + $s3Cost + $s4Cost;
             ?>
 
-            <div class="result-label mb-1">Total Amount Due</div>
-            <div class="result-total mb-1">₹ <?= number_format($totalBill, 2) ?></div>
-            <div class="text-secondary mb-4" style="font-size:0.9rem;">
-              <?= htmlspecialchars($name ?: 'Consumer') ?> &middot; <?= number_format($units) ?> units
+            <div style="text-align:center; padding-bottom:0.5rem;">
+              <div class="result-meta" style="margin-bottom:0.5rem;">Total Amount</div>
+              <div class="result-amount">&#8377; <?= number_format($totalBill, 2) ?></div>
+              <div class="result-meta"><?= htmlspecialchars($name ?: 'Consumer') ?> &middot; <?= number_format($units) ?> units</div>
             </div>
 
-            <div class="text-start px-2">
+            <div style="border-top: 1px solid #1c1c1e; padding-top: 0.5rem;">
               <?php if ($s1Units > 0): ?>
-              <div class="breakdown-item">
-                <span class="breakdown-label">Slab 1 — <?= $s1Units ?> units × ₹3.50</span>
-                <span class="breakdown-value">₹ <?= number_format($s1Cost, 2) ?></span>
+              <div class="breakdown-row">
+                <span class="bd-label"><?= $s1Units ?> units &times; &#8377;3.50</span>
+                <span class="bd-value">&#8377; <?= number_format($s1Cost, 2) ?></span>
               </div>
               <?php endif; ?>
               <?php if ($s2Units > 0): ?>
-              <div class="breakdown-item">
-                <span class="breakdown-label">Slab 2 — <?= $s2Units ?> units × ₹4.00</span>
-                <span class="breakdown-value">₹ <?= number_format($s2Cost, 2) ?></span>
+              <div class="breakdown-row">
+                <span class="bd-label"><?= $s2Units ?> units &times; &#8377;4.00</span>
+                <span class="bd-value">&#8377; <?= number_format($s2Cost, 2) ?></span>
               </div>
               <?php endif; ?>
               <?php if ($s3Units > 0): ?>
-              <div class="breakdown-item">
-                <span class="breakdown-label">Slab 3 — <?= $s3Units ?> units × ₹5.20</span>
-                <span class="breakdown-value">₹ <?= number_format($s3Cost, 2) ?></span>
+              <div class="breakdown-row">
+                <span class="bd-label"><?= $s3Units ?> units &times; &#8377;5.20</span>
+                <span class="bd-value">&#8377; <?= number_format($s3Cost, 2) ?></span>
               </div>
               <?php endif; ?>
               <?php if ($s4Units > 0): ?>
-              <div class="breakdown-item">
-                <span class="breakdown-label">Slab 4 — <?= $s4Units ?> units × ₹6.50</span>
-                <span class="breakdown-value">₹ <?= number_format($s4Cost, 2) ?></span>
+              <div class="breakdown-row">
+                <span class="bd-label"><?= $s4Units ?> units &times; &#8377;6.50</span>
+                <span class="bd-value">&#8377; <?= number_format($s4Cost, 2) ?></span>
               </div>
               <?php endif; ?>
             </div>
 
-            <!-- Hidden fields for jQuery slab highlighting -->
             <input type="hidden" id="calcUnits" value="<?= $units ?>">
             <input type="hidden" id="calcDone" value="1">
 
             <?php } else { ?>
             <input type="hidden" id="calcDone" value="0">
-            <div class="py-5 text-secondary">
-              <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚡</div>
-              Enter your units consumed and<br>click <strong>Calculate Bill</strong> to see results.
+            <div class="empty-state">
+              Enter your consumption details<br>and click <strong>Calculate</strong> to view your bill.
             </div>
             <?php } ?>
 
@@ -276,17 +345,13 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS + jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     $(document).ready(function () {
 
-      // --- Show result panel if PHP computed a result ---
       if ($('#calcDone').val() === '1') {
-        $('#result-panel').fadeIn(400);
-
-        // Highlight active slabs in the tariff table
+        $('#result-panel').fadeIn(300);
         var units = parseFloat($('#calcUnits').val()) || 0;
         if (units > 0)   $('#slab1').addClass('active-slab');
         if (units > 50)  $('#slab2').addClass('active-slab');
@@ -294,30 +359,25 @@
         if (units > 250) $('#slab4').addClass('active-slab');
       }
 
-      // --- Client-side validation with jQuery ---
       $('#billForm').on('submit', function (e) {
         var val = $('#units').val().trim();
         if (val === '' || isNaN(val) || parseFloat(val) < 0) {
           e.preventDefault();
-          $('#unitError').slideDown(200);
+          $('#unitError').slideDown(150);
           $('#units').addClass('error-shake');
-          setTimeout(function () { $('#units').removeClass('error-shake'); }, 400);
+          setTimeout(function () { $('#units').removeClass('error-shake'); }, 350);
           return false;
         }
-        $('#unitError').slideUp(200);
+        $('#unitError').slideUp(150);
       });
 
-      // Hide error on typing
-      $('#units').on('input', function () {
-        $('#unitError').slideUp(200);
-      });
+      $('#units').on('input', function () { $('#unitError').slideUp(150); });
 
-      // --- Reset button ---
       $('#btnReset').on('click', function () {
         $('#consumerName').val('');
         $('#units').val('');
-        $('#unitError').slideUp(200);
-        $('#result-panel').fadeOut(300);
+        $('#unitError').slideUp(150);
+        $('#result-panel').fadeOut(200);
         $('.active-slab').removeClass('active-slab');
       });
     });
